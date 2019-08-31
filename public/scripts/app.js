@@ -251,9 +251,9 @@ function loadLocationList() {
     }
   }
   if (!locations || Object.keys(locations).length === 0) {
-    const key = '40.7720232,-73.9732319';
+    const key = localStorage.getItem('userLocation');
     locations = {};
-    locations[key] = {label: 'New York City', geo: '40.7720232,-73.9732319'};
+    locations[key] = {label: 'Current Location', geo: key};
   }
   return locations;
 }
@@ -263,6 +263,8 @@ function loadLocationList() {
  * renders the initial data.
  */
 function init() {
+  // Get user location and save
+  saveUserLocation();
   // Get the location list, and update the UI.
   weatherApp.selectedLocations = loadLocationList();
   updateData();
@@ -276,4 +278,14 @@ function init() {
       .addEventListener('click', addLocation);
 }
 
+function saveUserLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(function(position){
+      localStorage.setItem('userLocation', position.coords.latitude + ',' + position.coords.longitude);
+    });
+  } else { 
+    //log err message
+    console.log("Geolocation is not supported by this browser.");
+  }
+}
 init();
