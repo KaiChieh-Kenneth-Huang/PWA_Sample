@@ -228,9 +228,10 @@ function updateData() {
 
 function uploadWeatherCards() {
   const updateRequest = new XMLHttpRequest();
-  updateRequest.open('post', '/updateCards');
+  updateRequest.open('put', '/updateCards');
   updateRequest.setRequestHeader("Content-Type", "text/plain");
   updateRequest.send(localStorage.getItem('locationList'));
+  console.log('post request sent: ' + localStorage.getItem('locationList'));
 }
 
 function downloadWeatherCards() {
