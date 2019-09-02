@@ -228,15 +228,31 @@ function updateData() {
 
 function uploadWeatherCards() {
   const updateRequest = new XMLHttpRequest();
-  updateRequest.open('put', '/updateCards');
+  updateRequest.open('put', '/cards');
   updateRequest.setRequestHeader("Content-Type", "text/plain");
   updateRequest.send(localStorage.getItem('locationList'));
-  console.log('post request sent: ' + localStorage.getItem('locationList'));
+  console.log('put request sent: ' + localStorage.getItem('locationList'));
 }
 
 function downloadWeatherCards() {
-  
+  // request the cards data from our app's sqlite database
+  const cardsRequest = new XMLHttpRequest();
+  cardsRequest.onload = getCardsListener;
+  cardsRequest.open('get', '/cards');
+  cardsRequest.send();
 }
+// a helper function to call when our request for dreams is done
+const getCardsListener = function() {
+  let cards = [];
+  cards = JSON.parse(this.responseText);
+  console.log(cards.cards);
+  // parse our response to convert to JSON
+  localStorage.setItem('locationList', cards.cards);
+  
+  weatherApp.selectedLocations = loadLocationList();
+  updateData();
+}
+
 
 /**
  * Saves the list of locations.

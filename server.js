@@ -220,11 +220,19 @@ function startServer() {
 SET ContactName = 'Alfred Schmidt', City= 'Frankfurt'
 WHERE CustomerID = 1;
   */
-  app.put('/updateCards', function (req, res) {
-  var stmt = db.prepare("UPDATE Cards SET cards = (?) WHERE userID = 'defaultUser'");
-  stmt.run(req.body);
-  console.log(req.body + " updated as current cards!");
-  })
+  app.put('/cards', function (req, res) {
+    var stmt = db.prepare("UPDATE Cards SET cards = (?) WHERE userID = 'defaultUser'");
+    stmt.run(req.body);
+    console.log(req.body + " updated as current cards!");
+  });
+  
+  app.get('/cards', function(req, res){
+    db.get("SELECT cards FROM Cards WHERE userID = 'defaultUser'", function(err, rows) {
+    res.send(JSON.stringify(rows));
+    console.log(JSON.stringify(rows) + ' sent!');
+  });
+  });   
+  
   
   // Start the server
   return app.listen('8000', () => {
