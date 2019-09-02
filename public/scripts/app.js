@@ -226,6 +226,17 @@ function updateData() {
   });
 }
 
+function uploadWeatherCards() {
+  const updateRequest = new XMLHttpRequest();
+  updateRequest.open('post', '/updateCards');
+  updateRequest.setRequestHeader("Content-Type", "text/plain");
+  updateRequest.send(localStorage.getItem('locationList'));
+}
+
+function downloadWeatherCards() {
+  
+}
+
 /**
  * Saves the list of locations.
  *
@@ -270,6 +281,8 @@ function init() {
   updateData();
 
   // Set up the event handlers for all of the buttons.
+  document.getElementById('butUpload').addEventListener('click', uploadWeatherCards);
+  document.getElementById('butDownload').addEventListener('click', downloadWeatherCards);
   document.getElementById('butRefresh').addEventListener('click', updateData);
   document.getElementById('butAdd').addEventListener('click', toggleAddDialog);
   document.getElementById('butDialogCancel')
