@@ -36,11 +36,27 @@ var dbFile = './.data/sqlite.db';
 var exists = fs.existsSync(dbFile);
 var sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.Database(dbFile);
-/*
+
 // if ./.data/sqlite.db does not exist, create it, otherwise print records to console
 db.serialize(function(){
-
-});*/
+   if (!exists) {
+    db.run('CREATE TABLE Cards (userID TEXT, cards TEXT)');
+    console.log('New table Cards created!');
+     
+     // insert default user
+    db.serialize(function() {
+      db.run('INSERT INTO Cards (userID, cards) VALUES ("defaultUser", "{}")');
+    });
+  }
+  else {
+    console.log('Database "Cards" ready to go!');
+    db.each('SELECT * from Cards', function(err, row) {
+      if ( row ) {
+        console.log('record:', row);
+      }
+    });
+  }
+});
 
 // Fake forecast data used if we can't reach the Dark Sky API
 const fakeForecast = {
@@ -199,7 +215,25 @@ function startServer() {
 
   // Handle requests for static files
   app.use(express.static('public'));
-
+  /*
+  UPDATE Customers
+SET ContactName = 'Alfred Schmidt', City= 'Frankfurt'
+WHERE CustomerID = 1;
+  */
+  app.put('/cards', function (req, res) {
+    var stmt = db.prepare("UPDATE Cards SET cards = (?) WHERE userID = 'defaultUser'");
+    stmt.run(req.body);
+    console.log(req.body + " updated as current cards!");
+  });
+  
+  app.get('/cards', function(req, res){
+    db.get("SELECT cards FROM Cards WHERE userID = 'defaultUser'", function(err, rows) {
+    res.send(JSON.stringify(rows));
+    console.log(JSON.stringify(rows) + ' sent!');
+  });
+  });   
+  
+  
   // Start the server
   return app.listen('8000', () => {
     // eslint-disable-next-line no-console

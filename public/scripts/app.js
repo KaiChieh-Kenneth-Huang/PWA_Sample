@@ -228,14 +228,31 @@ function updateData() {
 
 function uploadWeatherCards() {
   const updateRequest = new XMLHttpRequest();
-  updateRequest.open('post', '/updateCards');
+  updateRequest.open('put', '/cards');
   updateRequest.setRequestHeader("Content-Type", "text/plain");
   updateRequest.send(localStorage.getItem('locationList'));
+  console.log('put request sent: ' + localStorage.getItem('locationList'));
 }
 
 function downloadWeatherCards() {
-  
+  // request the cards data from our app's sqlite database
+  const cardsRequest = new XMLHttpRequest();
+  cardsRequest.onload = getCardsListener;
+  cardsRequest.open('get', '/cards');
+  cardsRequest.send();
 }
+// a helper function to call when our request for dreams is done
+const getCardsListener = function() {
+  let cards = [];
+  cards = JSON.parse(this.responseText);
+  console.log(cards.cards);
+  // parse our response to convert to JSON
+  localStorage.setItem('locationList', cards.cards);
+  
+  weatherApp.selectedLocations = loadLocationList();
+  updateData();
+}
+
 
 /**
  * Saves the list of locations.
@@ -274,11 +291,8 @@ function loadLocationList() {
  * renders the initial data.
  */
 function init() {
-  // Get user location and save
-  saveUserLocation();
-  // Get the location list, and update the UI.
-  weatherApp.selectedLocations = loadLocationList();
-  updateData();
+  // Get user location and save then add current location to the list of cities to add. Then update UI
+  saveUserLocationThenUpdateUI();
 
   // Set up the event handlers for all of the buttons.
   document.getElementById('butUpload').addEventListener('click', uploadWeatherCards);
@@ -291,14 +305,30 @@ function init() {
       .addEventListener('click', addLocation);
 }
 
-function saveUserLocation() {
+function saveUserLocationThenUpdateUI() {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(function(position){
       localStorage.setItem('userLocation', position.coords.latitude + ',' + position.coords.longitude);
+      // Get the location list, and update the UI. --- According to acquired user location
+      addUserLocationToCityToAddList();
+      weatherApp.selectedLocations = loadLocationList();
+      updateData();
     });
   } else { 
     //log err message
     console.log("Geolocation is not supported by this browser.");
+    // Get the location list, and update the UI. --- According to previous user location
+    addUserLocationToCityToAddList();
+    weatherApp.selectedLocations = loadLocationList();
+    updateData();
   }
+}
+
+function addUserLocationToCityToAddList() {
+  const cityToAddList = document.getElementById("selectCityToAdd");
+  const option = document.createElement("option");
+  option.value = localStorage.getItem('userLocation');
+  option.text = "Current Location";
+  cityToAddList.add(option, cityToAddList[0]);
 }
 init();
