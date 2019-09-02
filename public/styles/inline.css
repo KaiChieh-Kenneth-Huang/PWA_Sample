@@ -101,6 +101,14 @@ body {
   background: url(/images/install.svg) center center no-repeat;
 }
 
+.header #butUpload {
+  background: url(/images/upload.svg) center center no-repeat;
+}
+
+.header #butDownload {
+  background: url(/images/download.svg) center center no-repeat;
+}
+
 .header .powered-by {
   color: white;
   font-size: 0.6em;

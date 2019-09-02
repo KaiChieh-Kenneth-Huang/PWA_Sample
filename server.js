@@ -21,6 +21,7 @@
 const express = require('express');
 const fetch = require('node-fetch');
 const redirectToHTTPS = require('express-http-to-https').redirectToHTTPS;
+const bodyParser = require('body-parser');
 
 // CODELAB: Change this to add a delay (ms) before the server responds.
 const FORECAST_DELAY = 0;
@@ -28,6 +29,18 @@ const FORECAST_DELAY = 0;
 // CODELAB: If running locally, set your Dark Sky API key here
 const API_KEY = process.env.DARKSKY_API_KEY;
 const BASE_URL = `https://api.darksky.net/forecast`;
+
+// init sqlite db
+var fs = require('fs');
+var dbFile = './.data/sqlite.db';
+var exists = fs.existsSync(dbFile);
+var sqlite3 = require('sqlite3').verbose();
+var db = new sqlite3.Database(dbFile);
+/*
+// if ./.data/sqlite.db does not exist, create it, otherwise print records to console
+db.serialize(function(){
+
+});*/
 
 // Fake forecast data used if we can't reach the Dark Sky API
 const fakeForecast = {
@@ -164,6 +177,7 @@ function getForecast(req, resp) {
 function startServer() {
   const app = express();
 
+  app.use(bodyParser.text({ type: "text/plain" }));
   // Redirect HTTP to HTTPS,
   app.use(redirectToHTTPS([/localhost:(\d{4})/], [], 301));
 
