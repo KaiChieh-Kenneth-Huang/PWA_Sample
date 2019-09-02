@@ -224,6 +224,7 @@ WHERE CustomerID = 1;
     var stmt = db.prepare("UPDATE Cards SET cards = (?) WHERE userID = 'defaultUser'");
     stmt.run(req.body);
     console.log(req.body + " updated as current cards!");
+    res.send(200);
   });
   
   app.get('/cards', function(req, res){
