@@ -21,6 +21,7 @@
 const express = require('express');
 const fetch = require('node-fetch');
 const redirectToHTTPS = require('express-http-to-https').redirectToHTTPS;
+const bodyParser = require('body-parser');
 
 // CODELAB: Change this to add a delay (ms) before the server responds.
 const FORECAST_DELAY = 0;
@@ -28,6 +29,34 @@ const FORECAST_DELAY = 0;
 // CODELAB: If running locally, set your Dark Sky API key here
 const API_KEY = process.env.DARKSKY_API_KEY;
 const BASE_URL = `https://api.darksky.net/forecast`;
+
+// init sqlite db
+var fs = require('fs');
+var dbFile = './.data/sqlite.db';
+var exists = fs.existsSync(dbFile);
+var sqlite3 = require('sqlite3').verbose();
+var db = new sqlite3.Database(dbFile);
+
+// if ./.data/sqlite.db does not exist, create it, otherwise print records to console
+db.serialize(function(){
+   if (!exists) {
+    db.run('CREATE TABLE Cards (userID TEXT, cards TEXT)');
+    console.log('New table Cards created!');
+     
+     // insert default user
+    db.serialize(function() {
+      db.run('INSERT INTO Cards (userID, cards) VALUES ("defaultUser", "{}")');
+    });
+  }
+  else {
+    console.log('Database "Cards" ready to go!');
+    db.each('SELECT * from Cards', function(err, row) {
+      if ( row ) {
+        console.log('record:', row);
+      }
+    });
+  }
+});
 
 // Fake forecast data used if we can't reach the Dark Sky API
 const fakeForecast = {
@@ -164,6 +193,7 @@ function getForecast(req, resp) {
 function startServer() {
   const app = express();
 
+  app.use(bodyParser.text({ type: "text/plain" }));
   // Redirect HTTP to HTTPS,
   app.use(redirectToHTTPS([/localhost:(\d{4})/], [], 301));
 
@@ -185,7 +215,26 @@ function startServer() {
 
   // Handle requests for static files
   app.use(express.static('public'));
-
+  /*
+  UPDATE Customers
+SET ContactName = 'Alfred Schmidt', City= 'Frankfurt'
+WHERE CustomerID = 1;
+  */
+  app.put('/cards', function (req, res) {
+    var stmt = db.prepare("UPDATE Cards SET cards = (?) WHERE userID = 'defaultUser'");
+    stmt.run(req.body);
+    console.log(req.body + " updated as current cards!");
+    res.send(200);
+  });
+  
+  app.get('/cards', function(req, res){
+    db.get("SELECT cards FROM Cards WHERE userID = 'defaultUser'", function(err, rows) {
+    res.send(JSON.stringify(rows));
+    console.log(JSON.stringify(rows) + ' sent!');
+  });
+  });   
+  
+  
   // Start the server
   return app.listen('8000', () => {
     // eslint-disable-next-line no-console
