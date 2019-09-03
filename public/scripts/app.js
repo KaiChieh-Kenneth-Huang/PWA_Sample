@@ -238,14 +238,21 @@ function downloadWeatherCards() {
   // request the cards data from our app's sqlite database
   const cardsRequest = new XMLHttpRequest();
   cardsRequest.onload = getCardsListener;
-  cardsRequest.open('get', '/cards');
+  cardsRequest.open('get', 'cards');
   cardsRequest.send();
 }
 // a helper function to call when our request for dreams is done
 const getCardsListener = function() {
   let cards = [];
+  
+  
+     
+$('.weather-card').not( document.getElementById( "weather-template" ) ).remove();
+
   cards = JSON.parse(this.responseText);
-  console.log(cards.cards);
+  //console.log(cards.cards);
+  
+  
   // parse our response to convert to JSON
   localStorage.setItem('locationList', cards.cards);
   
